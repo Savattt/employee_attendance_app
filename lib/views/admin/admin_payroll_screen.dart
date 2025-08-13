@@ -18,11 +18,6 @@ class AdminPayrollScreen extends StatelessWidget {
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
-      appBar: AppBar(
-        title: const Text('Payroll Management'),
-        backgroundColor: theme.primaryColor,
-        elevation: 0,
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddOrEditPayrollDialog(context),
         child: const Icon(Icons.add),
@@ -33,60 +28,61 @@ class AdminPayrollScreen extends StatelessWidget {
           () => payrollController.isLoading.value
               ? const Center(child: CircularProgressIndicator())
               : payrollController.payrollList.isEmpty
-              ? const Center(child: Text('No payroll records found.'))
-              : ListView.separated(
-                  itemCount: payrollController.payrollList.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final payroll = payrollController.payrollList[index];
-                    return Card(
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: ListTile(
-                        leading: Icon(
-                          Icons.receipt_long,
-                          color: theme.primaryColor,
-                        ),
-                        title: Text(
-                          DateFormat(
-                            'MMMM yyyy',
-                          ).format(DateTime(payroll.year, payroll.month)),
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          'Net Pay: ${payroll.netPay.toStringAsFixed(2)}',
-                        ),
-                        trailing: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
+                  ? const Center(child: Text('No payroll records found.'))
+                  : ListView.separated(
+                      itemCount: payrollController.payrollList.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final payroll = payrollController.payrollList[index];
+                        return Card(
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          decoration: BoxDecoration(
-                            color: payroll.status == 'Paid'
-                                ? Colors.green.shade100
-                                : Colors.orange.shade100,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            payroll.status,
-                            style: TextStyle(
-                              color: payroll.status == 'Paid'
-                                  ? Colors.green.shade800
-                                  : Colors.orange.shade800,
-                              fontWeight: FontWeight.w600,
+                          child: ListTile(
+                            leading: Icon(
+                              Icons.receipt_long,
+                              color: theme.primaryColor,
+                            ),
+                            title: Text(
+                              DateFormat(
+                                'MMMM yyyy',
+                              ).format(DateTime(payroll.year, payroll.month)),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Text(
+                              'Net Pay: ${payroll.netPay.toStringAsFixed(2)}',
+                            ),
+                            trailing: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: payroll.status == 'Paid'
+                                    ? Colors.green.shade100
+                                    : Colors.orange.shade100,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                payroll.status,
+                                style: TextStyle(
+                                  color: payroll.status == 'Paid'
+                                      ? Colors.green.shade800
+                                      : Colors.orange.shade800,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            onTap: () => _showAddOrEditPayrollDialog(
+                              context,
+                              payroll: payroll,
                             ),
                           ),
-                        ),
-                        onTap: () => _showAddOrEditPayrollDialog(
-                          context,
-                          payroll: payroll,
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                        );
+                      },
+                    ),
         ),
       ),
     );

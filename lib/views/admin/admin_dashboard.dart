@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../models/user_model.dart';
 import '../../controllers/admin_controller.dart';
-import 'package:intl/intl.dart';
-import '../../controllers/auth_controller.dart';
-import 'admin_payroll_screen.dart';
-import 'admin_shift_screen.dart';
+import '../../utils/responsive_utils.dart';
+import 'create_user_screen.dart';
+import 'main_scaffold.dart';
 
 class AdminDashboard extends StatelessWidget {
   final UserModel userModel;
@@ -15,165 +14,210 @@ class AdminDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     final adminController = Get.put(AdminController());
     final theme = Theme.of(context);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
-      appBar: AppBar(
-        title: const Text('Admin Dashboard'),
-        backgroundColor: theme.primaryColor,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Sign Out',
-            onPressed: () async {
-              await Get.find<AuthController>().signOut();
-            },
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ElevatedButton(
-              onPressed: () => Get.to(() => AdminPayrollScreen()),
-              child: const Text('Manage Payrolls'),
-            ),
-            const SizedBox(height: 8),
-            ElevatedButton(
-              onPressed: () => Get.to(() => AdminShiftScreen()),
-              child: const Text('Manage Shifts'),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'All Leave Requests',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: Obx(
-                () => adminController.isLoading.value
-                    ? const Center(child: CircularProgressIndicator())
-                    : adminController.leaveList.isEmpty
-                    ? const Center(child: Text('No leave requests.'))
-                    : ListView.separated(
-                        itemCount: adminController.leaveList.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
-                        itemBuilder: (context, index) {
-                          final leave = adminController.leaveList[index];
-                          return Card(
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Icon(
-                                        Icons.person,
-                                        color: theme.primaryColor,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              '${leave.type} (${DateFormat('yyyy-MM-dd').format(leave.startDate)} - ${DateFormat('yyyy-MM-dd').format(leave.endDate)})',
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              'Employee: ${leave.employeeEmail ?? 'Unknown'}',
-                                            ),
-                                            Text('Reason: ${leave.reason}'),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 10,
-                                          vertical: 6,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: leave.status == 'Approved'
-                                              ? Colors.green.shade100
-                                              : leave.status == 'Pending'
-                                              ? Colors.orange.shade100
-                                              : Colors.red.shade100,
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          leave.status,
-                                          style: TextStyle(
-                                            color: leave.status == 'Approved'
-                                                ? Colors.green.shade800
-                                                : leave.status == 'Pending'
-                                                ? Colors.orange.shade800
-                                                : Colors.red.shade800,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  if (leave.status == 'Pending') ...[
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        IconButton(
-                                          icon: const Icon(
-                                            Icons.check_circle,
-                                            color: Colors.green,
-                                          ),
-                                          tooltip: 'Approve',
-                                          onPressed: () =>
-                                              adminController.updateLeaveStatus(
-                                                leave,
-                                                'Approved',
-                                              ),
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(
-                                            Icons.cancel,
-                                            color: Colors.red,
-                                          ),
-                                          tooltip: 'Reject',
-                                          onPressed: () =>
-                                              adminController.updateLeaveStatus(
-                                                leave,
-                                                'Rejected',
-                                              ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          );
-                        },
+      body: ResponsiveBuilder(
+        builder: (context, isMobile, isTablet, isDesktop) {
+          return SingleChildScrollView(
+            padding: ResponsiveUtils.getScreenPadding(context),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Welcome Section
+                Container(
+                  width: double.infinity,
+                  padding: ResponsiveUtils.getCardPaddingEdgeInsets(context),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        theme.primaryColor,
+                        theme.primaryColor.withOpacity(0.8)
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: ResponsiveUtils.getCardBorderRadius(context),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Welcome, Admin!',
+                        style: TextStyle(
+                          fontSize: ResponsiveUtils.getTitleFontSize(context),
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-              ),
+                      SizedBox(
+                          height: ResponsiveUtils.getSmallSpacing(context)),
+                      Text(
+                        'Manage your organization efficiently',
+                        style: TextStyle(
+                          fontSize: ResponsiveUtils.getBodyFontSize(context),
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                SizedBox(height: ResponsiveUtils.getLargeSpacing(context)),
+
+                // Quick Actions Grid
+                Text(
+                  'Quick Actions',
+                  style: TextStyle(
+                    fontSize: ResponsiveUtils.getTitleFontSize(context),
+                    fontWeight: FontWeight.bold,
+                    color: theme.primaryColor,
+                  ),
+                ),
+                SizedBox(height: ResponsiveUtils.getSpacing(context)),
+
+                GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount:
+                      ResponsiveUtils.getGridCrossAxisCount(context),
+                  crossAxisSpacing: ResponsiveUtils.getSpacing(context),
+                  mainAxisSpacing: ResponsiveUtils.getSpacing(context),
+                  childAspectRatio:
+                      ResponsiveUtils.getGridChildAspectRatio(context),
+                  children: [
+                    _buildActionCard(
+                      context,
+                      'Attendance Overview',
+                      Icons.people,
+                      Colors.indigo,
+                      () => _navigateToTab(1),
+                      isMobile: isMobile,
+                    ),
+                    _buildActionCard(
+                      context,
+                      'Manage Payroll',
+                      Icons.attach_money,
+                      Colors.green,
+                      () => _navigateToTab(2),
+                      isMobile: isMobile,
+                    ),
+                    _buildActionCard(
+                      context,
+                      'Manage Shifts',
+                      Icons.schedule,
+                      Colors.blue,
+                      () => _navigateToTab(3),
+                      isMobile: isMobile,
+                    ),
+                    _buildActionCard(
+                      context,
+                      'Leave Approvals',
+                      Icons.pending_actions,
+                      Colors.orange,
+                      () => _navigateToTab(4),
+                      isMobile: isMobile,
+                    ),
+                    _buildActionCard(
+                      context,
+                      'QR Code Management',
+                      Icons.qr_code,
+                      Colors.teal,
+                      () => _navigateToTab(5),
+                      isMobile: isMobile,
+                    ),
+                    _buildActionCard(
+                      context,
+                      'Create User',
+                      Icons.person_add,
+                      Colors.purple,
+                      () => Get.to(() => const CreateUserScreen()),
+                      isMobile: isMobile,
+                    ),
+                    if (isMobile) // Only show test button on mobile for space
+                      _buildActionCard(
+                        context,
+                        'Test Leave Request',
+                        Icons.bug_report,
+                        Colors.red,
+                        () => _createTestLeaveRequest(),
+                        isMobile: isMobile,
+                      ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          );
+        },
+      ),
+    );
+  }
+
+  void _navigateToTab(int index) {
+    // Find the AdminMainScaffoldController and change the selected tab
+    final controller = Get.find<AdminMainScaffoldController>();
+    controller.changeTab(index);
+  }
+
+  Widget _buildActionCard(BuildContext context, String title, IconData icon,
+      Color color, VoidCallback onTap,
+      {required bool isMobile}) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: ResponsiveUtils.getCardBorderRadius(context),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: ResponsiveUtils.getCardBorderRadius(context),
+        child: Container(
+          padding: ResponsiveUtils.getCardPaddingEdgeInsets(context),
+          decoration: BoxDecoration(
+            borderRadius: ResponsiveUtils.getCardBorderRadius(context),
+            gradient: LinearGradient(
+              colors: [color, color.withOpacity(0.8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: ResponsiveUtils.getIconSize(context),
+                color: Colors.white,
+              ),
+              SizedBox(height: ResponsiveUtils.getSmallSpacing(context)),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize:
+                      isMobile ? 14 : ResponsiveUtils.getBodyFontSize(context),
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  void _createTestLeaveRequest() {
+    // This is a placeholder for creating a test leave request.
+    // In a real application, you would navigate to a new screen or pass data.
+    // For now, we'll just show a snackbar.
+    Get.snackbar(
+      'Test Leave Request',
+      'This button is for testing leave approval/rejection functionality.',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.orange,
+      colorText: Colors.white,
     );
   }
 }

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'leave_screen.dart';
-import 'payroll_screen.dart';
-import 'shift_screen.dart';
 import '../../controllers/auth_controller.dart';
+import '../../controllers/notification_controller.dart';
+import '../../services/cloudinary_service.dart';
+import '../../utils/responsive_utils.dart';
+import 'main_scaffold.dart';
 
 class EmployeeDashboard extends StatelessWidget {
   final String userName;
@@ -24,194 +25,203 @@ class EmployeeDashboard extends StatelessWidget {
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        backgroundColor: theme.primaryColor,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Sign Out',
-            onPressed: () async {
-              await Get.find<AuthController>().signOut();
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Welcome Card
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundColor: theme.primaryColor.withOpacity(0.1),
-                      child: Icon(
-                        Icons.person,
-                        size: 32,
-                        color: theme.primaryColor,
-                      ),
+      body: ResponsiveBuilder(
+        builder: (context, isMobile, isTablet, isDesktop) {
+          return SingleChildScrollView(
+            padding: ResponsiveUtils.getScreenPadding(context),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Welcome Card
+                Obx(() {
+                  final userModel = Get.find<AuthController>().userModel.value;
+                  final name = userModel?.displayName ?? 'Employee';
+                  final email = userModel?.email;
+                  final photoUrl = userModel?.photoUrl;
+                  return Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          ResponsiveUtils.getCardBorderRadius(context),
                     ),
-                    const SizedBox(width: 18),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Padding(
+                      padding:
+                          ResponsiveUtils.getCardPaddingEdgeInsets(context),
+                      child: Row(
                         children: [
-                          Text(
-                            'Welcome, $userName!',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
+                          CircleAvatar(
+                            radius: ResponsiveUtils.isMobile(context) ? 28 : 35,
+                            backgroundColor:
+                                theme.primaryColor.withOpacity(0.1),
+                            backgroundImage: (photoUrl != null &&
+                                    photoUrl.isNotEmpty)
+                                ? NetworkImage(
+                                    CloudinaryService.getOptimizedProfileUrl(
+                                        photoUrl))
+                                : null,
+                            child: (photoUrl == null || photoUrl.isEmpty)
+                                ? Icon(Icons.person,
+                                    size: ResponsiveUtils.getIconSize(context),
+                                    color: theme.primaryColor)
+                                : null,
+                          ),
+                          SizedBox(width: ResponsiveUtils.getSpacing(context)),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Welcome back,',
+                                  style: TextStyle(
+                                    fontSize: ResponsiveUtils.getBodyFontSize(
+                                        context),
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  name,
+                                  style: TextStyle(
+                                    fontSize: ResponsiveUtils.getTitleFontSize(
+                                        context),
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.primaryColor,
+                                  ),
+                                ),
+                                if (email != null) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    email,
+                                    style: TextStyle(
+                                      fontSize: ResponsiveUtils.getBodyFontSize(
+                                              context) -
+                                          2,
+                                      color: Colors.grey[500],
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
-                          if (email != null)
-                            Text(
-                              email!,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: Colors.grey[700],
-                              ),
-                            ),
                         ],
                       ),
                     ),
-                  ],
+                  );
+                }),
+
+                SizedBox(height: ResponsiveUtils.getLargeSpacing(context)),
+
+                // Quick Actions Section
+                Text(
+                  'Quick Actions',
+                  style: TextStyle(
+                    fontSize: ResponsiveUtils.getTitleFontSize(context),
+                    fontWeight: FontWeight.bold,
+                    color: theme.primaryColor,
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            // Attendance Card
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                SizedBox(height: ResponsiveUtils.getSpacing(context)),
+
+                // Quick Actions Grid
+                ResponsiveBuilder(
+                  builder: (context, isMobile, isTablet, isDesktop) {
+                    return Column(
                       children: [
-                        Icon(Icons.access_time, color: theme.primaryColor),
-                        const SizedBox(width: 10),
-                        Text(
-                          'Today\'s Attendance',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const Spacer(),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: attendanceStatus == 'Present'
-                                ? Colors.green.shade100
-                                : attendanceStatus == 'Late'
-                                ? Colors.orange.shade100
-                                : Colors.red.shade100,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            attendanceStatus,
-                            style: TextStyle(
-                              color: attendanceStatus == 'Present'
-                                  ? Colors.green.shade800
-                                  : attendanceStatus == 'Late'
-                                  ? Colors.orange.shade800
-                                  : Colors.red.shade800,
-                              fontWeight: FontWeight.w600,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _QuickActionCard(
+                                icon: Icons.qr_code_scanner,
+                                label: 'QR Scanner',
+                                color: Colors.blue,
+                                onTap: () {
+                                  Get.toNamed('/qr-scanner');
+                                },
+                              ),
                             ),
-                          ),
+                            SizedBox(
+                                width: ResponsiveUtils.getSpacing(context)),
+                            Expanded(
+                              child: _QuickActionCard(
+                                icon: Icons.history,
+                                label: 'Attendance',
+                                color: Colors.green,
+                                onTap: () {
+                                  Get.find<MainScaffoldController>()
+                                      .changeTab(1);
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: ResponsiveUtils.getSpacing(context)),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _QuickActionCard(
+                                icon: Icons.beach_access,
+                                label: 'Leave',
+                                color: Colors.orange,
+                                onTap: () {
+                                  Get.find<MainScaffoldController>()
+                                      .changeTab(2);
+                                },
+                              ),
+                            ),
+                            SizedBox(
+                                width: ResponsiveUtils.getSpacing(context)),
+                            Expanded(
+                              child: _QuickActionCard(
+                                icon: Icons.attach_money,
+                                label: 'Payroll',
+                                color: Colors.purple,
+                                onTap: () {
+                                  Get.find<MainScaffoldController>()
+                                      .changeTab(3);
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 18),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isCheckedIn
-                              ? Colors.red
-                              : theme.primaryColor,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                    );
+                  },
+                ),
+
+                SizedBox(height: ResponsiveUtils.getLargeSpacing(context)),
+
+                // Test Notification Button (for debugging)
+                if (ResponsiveUtils.isMobile(context)) // Only show on mobile
+                  Center(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        final notificationController =
+                            Get.find<NotificationController>();
+                        notificationController.testNotification();
+                        Get.snackbar(
+                          'Test',
+                          'Test notification sent!',
+                          snackPosition: SnackPosition.TOP,
+                          backgroundColor: Colors.green,
+                          colorText: Colors.white,
+                        );
+                      },
+                      icon: const Icon(Icons.notifications),
+                      label: const Text('Test Notification'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: ResponsiveUtils.getSpacing(context),
+                          vertical: ResponsiveUtils.getSmallSpacing(context),
                         ),
-                        icon: Icon(isCheckedIn ? Icons.logout : Icons.login),
-                        label: Text(
-                          isCheckedIn ? 'Check Out' : 'Check In',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        onPressed: () {
-                          // TODO: Implement check-in/out logic
-                          Get.snackbar(
-                            'Action',
-                            isCheckedIn ? 'Checked out!' : 'Checked in!',
-                            backgroundColor: Colors.blue.shade50,
-                            colorText: theme.primaryColor,
-                            snackPosition: SnackPosition.BOTTOM,
-                          );
-                        },
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            // Quick Actions
-            Text(
-              'Quick Actions',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _QuickActionCard(
-                  icon: Icons.beach_access,
-                  label: 'Leave',
-                  color: Colors.orange,
-                  onTap: () {
-                    Get.to(() => LeaveScreen());
-                  },
-                ),
-                _QuickActionCard(
-                  icon: Icons.attach_money,
-                  label: 'Payroll',
-                  color: Colors.green,
-                  onTap: () {
-                    Get.to(() => PayrollScreen());
-                  },
-                ),
-                _QuickActionCard(
-                  icon: Icons.schedule,
-                  label: 'Schedule',
-                  color: Colors.blue,
-                  onTap: () {
-                    Get.to(() => ShiftScreen());
-                  },
-                ),
+                  ),
               ],
             ),
-            // Add more dashboard widgets as needed
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -238,18 +248,28 @@ class _QuickActionCard extends StatelessWidget {
         child: Card(
           elevation: 3,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: ResponsiveUtils.getCardBorderRadius(context),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18),
+            padding: EdgeInsets.symmetric(
+              vertical: ResponsiveUtils.getSpacing(context),
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: color, size: 32),
-                const SizedBox(height: 8),
+                Icon(
+                  icon,
+                  color: color,
+                  size: ResponsiveUtils.getIconSize(context),
+                ),
+                SizedBox(height: ResponsiveUtils.getSmallSpacing(context)),
                 Text(
                   label,
-                  style: TextStyle(fontWeight: FontWeight.w600, color: color),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                    fontSize: ResponsiveUtils.getBodyFontSize(context),
+                  ),
                 ),
               ],
             ),

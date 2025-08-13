@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
+import '../controllers/auth_controller.dart';
 
 class AuthService {
   static final AuthService _instance = AuthService._internal();
@@ -20,10 +21,10 @@ class AuthService {
         .collection('users')
         .doc(cred.user!.uid)
         .set({
-          'email': email,
-          'displayName': cred.user!.displayName,
-          'role': 'employee',
-        });
+      'email': email,
+      'displayName': cred.user!.displayName,
+      'role': 'employee',
+    });
     return cred;
   }
 
@@ -78,5 +79,104 @@ class AuthService {
     await FirebaseFirestore.instance.collection('users').doc(uid).update({
       'role': role,
     });
+  }
+
+  // Create user without auto-login (for admin use)
+  Future<String> createUserWithoutLogin(String email, String password,
+      String displayName, String role, String? photoUrl,
+      {AuthController? authController}) async {
+    // Set flag to prevent auth state changes if controller is provided
+    if (authController != null) {
+      authController.isCreatingUser.value = true;
+    }
+
+    try {
+      // Create user in Firebase Auth
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Update display name
+      await userCredential.user!.updateDisplayName(displayName);
+
+      // Create user in Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .set({
+        'email': email,
+        'displayName': displayName,
+        'photoUrl': photoUrl,
+        'role': role,
+      });
+
+      // Sign out the newly created user
+      await _auth.signOut();
+
+      return userCredential.user!.uid;
+    } finally {
+      // Clear flag to allow auth state changes again
+      if (authController != null) {
+        authController.isCreatingUser.value = false;
+      }
+    }
+  }
+
+  // Create user and re-authenticate admin (for admin use)
+  Future<String> createUserAndReauthAdmin(String email, String password,
+      String displayName, String role, String? photoUrl,
+      String adminEmail, String adminPassword) async {
+    
+    // Store current admin user before creating new user
+    final currentAdminUser = _auth.currentUser;
+    
+    try {
+      // Create user in Firebase Auth
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Update display name
+      await userCredential.user!.updateDisplayName(displayName);
+
+      // Create user in Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .set({
+        'email': email,
+        'displayName': displayName,
+        'photoUrl': photoUrl,
+        'role': role,
+      });
+
+      // Sign out the newly created user
+      await _auth.signOut();
+      
+      // Re-authenticate as admin
+      if (adminEmail.isNotEmpty && adminPassword.isNotEmpty) {
+        await _auth.signInWithEmailAndPassword(
+          email: adminEmail,
+          password: adminPassword,
+        );
+      }
+
+      return userCredential.user!.uid;
+    } catch (e) {
+      // If re-authentication fails, try to sign in as the original admin
+      if (currentAdminUser != null) {
+        try {
+          await _auth.signInWithEmailAndPassword(
+            email: adminEmail,
+            password: adminPassword,
+          );
+        } catch (reauthError) {
+          print('Failed to re-authenticate admin: $reauthError');
+        }
+      }
+      rethrow;
+    }
   }
 }

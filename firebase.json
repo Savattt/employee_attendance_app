@@ -1,0 +1,1 @@
+{"flutter":{"platforms":{"android":{"default":{"projectId":"attendance-sana","appId":"1:522974519189:android:ab46dcf449a1ecccb8209c","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"attendance-sana","configurations":{"android":"1:522974519189:android:ab46dcf449a1ecccb8209c","ios":"1:522974519189:ios:9db5d5d971f5238db8209c"}}}}}}
