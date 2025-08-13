@@ -75,9 +75,8 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
       if (todayAttendance != null) {
         if (todayAttendance.checkOutTime != null) {
           currentStatus = 'checked-out';
-        } else if (todayAttendance.checkInTime != null) {
+        } else
           currentStatus = 'checked-in';
-        }
       }
 
       if (currentStatus == 'not-checked-in') {
@@ -195,12 +194,14 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                           Text(
                             'Today\'s Status',
                             style: TextStyle(
-                              fontSize: ResponsiveUtils.getBodyFontSize(context),
+                              fontSize:
+                                  ResponsiveUtils.getBodyFontSize(context),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           Obx(() {
-                            final todayAttendance = _attendanceController.todayAttendance.value;
+                            final todayAttendance =
+                                _attendanceController.todayAttendance.value;
                             String status = 'Not Checked In';
                             Color statusColor = Colors.grey;
 
@@ -208,16 +209,16 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                               if (todayAttendance.checkOutTime != null) {
                                 status = 'Checked Out';
                                 statusColor = Colors.orange;
-                              } else if (todayAttendance.checkInTime != null) {
+                              } else
                                 status = 'Checked In';
-                                statusColor = Colors.green;
-                              }
+                              statusColor = Colors.green;
                             }
 
                             return Text(
                               status,
                               style: TextStyle(
-                                fontSize: ResponsiveUtils.getBodyFontSize(context),
+                                fontSize:
+                                    ResponsiveUtils.getBodyFontSize(context),
                                 color: statusColor,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -268,9 +269,11 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                             child: Center(
                               child: Container(
                                 margin: EdgeInsets.symmetric(
-                                  horizontal: ResponsiveUtils.getSpacing(context),
+                                  horizontal:
+                                      ResponsiveUtils.getSpacing(context),
                                 ),
-                                padding: EdgeInsets.all(ResponsiveUtils.getSpacing(context)),
+                                padding: EdgeInsets.all(
+                                    ResponsiveUtils.getSpacing(context)),
                                 decoration: BoxDecoration(
                                   color: Colors.black.withOpacity(0.7),
                                   borderRadius: BorderRadius.circular(8),
@@ -279,7 +282,8 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                                   'Position QR code within the frame to scan',
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: ResponsiveUtils.getBodyFontSize(context),
+                                    fontSize: ResponsiveUtils.getBodyFontSize(
+                                        context),
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -297,15 +301,19 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                               size: 64,
                               color: Colors.grey[400],
                             ),
-                            SizedBox(height: ResponsiveUtils.getSpacing(context)),
+                            SizedBox(
+                                height: ResponsiveUtils.getSpacing(context)),
                             Text(
                               'Camera permission required',
                               style: TextStyle(
-                                fontSize: ResponsiveUtils.getTitleFontSize(context),
+                                fontSize:
+                                    ResponsiveUtils.getTitleFontSize(context),
                                 color: Colors.grey[600],
                               ),
                             ),
-                            SizedBox(height: ResponsiveUtils.getSmallSpacing(context)),
+                            SizedBox(
+                                height:
+                                    ResponsiveUtils.getSmallSpacing(context)),
                             ElevatedButton(
                               onPressed: _checkPermission,
                               child: const Text('Grant Permission'),

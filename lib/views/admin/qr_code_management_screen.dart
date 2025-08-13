@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import 'package:intl/intl.dart';
 import '../../controllers/attendance_controller.dart';
-import '../../models/qr_code_model.dart';
 
 class QRCodeManagementScreen extends StatefulWidget {
   const QRCodeManagementScreen({super.key});

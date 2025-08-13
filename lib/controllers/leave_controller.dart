@@ -13,12 +13,7 @@ class LeaveController extends GetxController {
   final RxList<LeaveModel> leaveList = <LeaveModel>[].obs;
   final RxList<LeaveModel> allLeaves = <LeaveModel>[].obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-  }
-
-    Future<void> fetchLeaves() async {
+  Future<void> fetchLeaves() async {
     isLoading.value = true;
     try {
       // Check if we should use Firebase or Laravel API
@@ -67,17 +62,16 @@ class LeaveController extends GetxController {
   Future<void> _fetchLeavesFromApi() async {
     print('=== Fetching leaves from API ===');
     print('=== API Base URL: ${_leaveApiService.client.baseUrl} ===');
-    
+
     final response = await _leaveApiService.listLeaves();
     print('=== API Response Status: ${response.statusCode} ===');
     print('=== API Response Data: ${response.data} ===');
-    
+
     if (response.statusCode == 200) {
       final List<dynamic> data =
           response.data['data']['data'] ?? response.data['data'] ?? [];
       print('=== Parsed data length: ${data.length} ===');
-      leaveList.value =
-          data.map((json) => LeaveModel.fromJson(json)).toList();
+      leaveList.value = data.map((json) => LeaveModel.fromJson(json)).toList();
       print('=== Leave list updated: ${leaveList.length} items ===');
     } else {
       print('=== API returned non-200 status: ${response.statusCode} ===');
@@ -144,9 +138,7 @@ class LeaveController extends GetxController {
         'createdAt': FieldValue.serverTimestamp(),
       };
 
-      await FirebaseFirestore.instance
-          .collection('leaves')
-          .add(leaveData);
+      await FirebaseFirestore.instance.collection('leaves').add(leaveData);
 
       await fetchLeaves();
       Get.snackbar('Success', 'Leave request submitted successfully');

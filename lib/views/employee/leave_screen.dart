@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/leave_controller.dart';
-import '../../models/leave_model.dart';
 import '../../utils/responsive_utils.dart';
 
 class LeaveScreen extends StatefulWidget {

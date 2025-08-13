@@ -11,11 +11,6 @@ class AttendanceController extends GetxController {
   final RxList<AttendanceModel> attendanceList = <AttendanceModel>[].obs;
   final Rxn<AttendanceModel> todayAttendance = Rxn<AttendanceModel>();
 
-  @override
-  void onInit() {
-    super.onInit();
-  }
-
   Future<bool> checkIn({
     required String userId,
     required String employeeName,
